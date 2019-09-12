@@ -80,7 +80,7 @@ void ISort(){
 
 void Read(){
 	printf("Enter the string: ");
-	scanf("%s", s);
+	scanf(" %[^\n]", s);
 	n = strlen(s);
 	lookup_size = 0;
 }
