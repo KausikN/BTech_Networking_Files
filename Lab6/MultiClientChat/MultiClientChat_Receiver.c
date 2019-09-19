@@ -74,6 +74,16 @@ int FindClient(struct Client clients[], int clients_size, char name[])
 	return -1;
 }
 
+void DisplayConnectedClients(struct Client clients[], int clients_size)
+{
+	printf("\nConnected Clients: ");
+	for(int i=0;i<clients_size;i++)
+	{
+		printf("%s, ", clients[i].name);
+	}
+	printf("\n");
+}
+
 int main()
 {
 	printf("----------------------Multi Client Chat Receiver-----------------------------\n");
@@ -110,9 +120,13 @@ int main()
 				if(accepterror == 0)
 				{
 
-					int pid = vfork();
-					if(pid == 0) continue;
-					else if(pid > 0)
+					int pid = fork();
+					if(pid > 0)
+					{
+						//return 0;
+						continue;
+					} 
+					else if(pid == 0)
 					{
 						int s_server_child = s_server;
 						int clientindex = clients_size;
@@ -137,6 +151,14 @@ int main()
 						strcpy(clients[clientindex].port_str, port_str);
 						clients_size++;
 
+						DisplayConnectedClients(clients, clients_size);
+						/*
+						int pidnextclient = fork();
+						if(pidnextclient > 0)
+						{
+							continue;
+						}
+						*/
 						recv(s_server_child, dest_name, sizeof(dest_name), 0);
 
 						if(strcmp(dest_name, "_") == 0)
@@ -145,6 +167,7 @@ int main()
 						}
 						else 
 						{
+							
 							int destindex = FindClient(clients, clients_size, dest_name);
 
 							if(destindex == -1) printf("Dest %s not found.\n", dest_name);

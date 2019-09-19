@@ -7,6 +7,8 @@
 #include<string.h>
 #include<unistd.h>
 
+#include<time.h>
+
 int c_socket;
 
 char arr[100];
@@ -29,16 +31,43 @@ int ClientCreate(int port, int anyip, char IPADDR[])		// Return 1 for error
 	else return 0;
 }
 
+int GetCurTime(char returnval[], int display)
+{
+	time_t t;
+	struct tm * timeinfo;
+	time(&t);
+	timeinfo = localtime(&t);
+
+	int year = timeinfo->tm_year + 1900;
+	int month = timeinfo->tm_mon + 1;
+	int date = timeinfo->tm_mday;
+	int hour = timeinfo->tm_hour;
+	int minutes = timeinfo->tm_min;
+	int seconds = timeinfo->tm_sec;
+
+	if(display == 1) printf("\nCurTime: %d:%d:%d - %d/%d/%d\n", hour, minutes, seconds, date, month, year);
+
+	if(strcmp(returnval, "year") == 0) return year;
+	else if(strcmp(returnval, "month") == 0) return month;
+	else if(strcmp(returnval, "date") == 0) return date;
+	else if(strcmp(returnval, "hour") == 0) return hour;
+	else if(strcmp(returnval, "minutes") == 0) return minutes;
+	else if(strcmp(returnval, "seconds") == 0) return seconds;
+	else return -1;
+}
+
 int main()
 {
-	printf("----------------------Multi Client Chat Transmitter-----------------------------\n");
+	printf("----------------------CROREPATHI Transmitter-----------------------------\n");
 
-	int exit = 0;
+	//PrintCurTime();
 
-	while(exit == 0)
+	int ex2 = 0;
+
+	while(ex2 == 0)
 	{
 		char name[50];
-		printf("Enter Name: ");
+		printf("\n\nEnter Name: ");
 		scanf("%s", name);
 
 		char ipaddr[20];
@@ -58,46 +87,88 @@ int main()
 		}
 		else 
 		{
-				char port_str[20];
 
-				int i=0;
-				int p = port;
-				while(p > 0)
+			int recv_mode = 0;
+
+			char port_str[20];
+
+			int i=0;
+			int p = port;
+			while(p > 0)
+			{
+				port_str[i] = (char)(48 + p%10);
+				i++;
+				p = p/10;
+			}
+
+			port_str[i] = '\0';	
+
+			send(c_socket, name, sizeof(name), 0);
+			send(c_socket, ipaddr, sizeof(ipaddr), 0);
+			send(c_socket, port_str, sizeof(port_str), 0);
+
+			char ques[200];
+			char ans[200];
+			char reply[10];
+			
+
+			printf("[+] Server Connected\n\n");
+
+			int exloop = 0;
+			while(exloop == 0)
+			{
+				char over[2];
+				recv(c_socket, over, sizeof(over), 0);
+				if(over[0] == '1')
 				{
-					port_str[i] = (char)(48 + p%10);
-					i++;
-					p = p/10;
+					exloop = 1;
 				}
-
-				port_str[i] = '\0';	
-
-				send(c_socket, name, sizeof(name), 0);
-				send(c_socket, ipaddr, sizeof(ipaddr), 0);
-				send(c_socket, port_str, sizeof(port_str), 0);
-
-				char text[200];
-
-				printf("[+] Server Connected\n\n");
-
-				int end = 0;
-				while(end == 0)
+				else 
 				{
-					scanf("%s", text);
-					send(c_socket, text, sizeof(text), 0);
-					if(strcmp(text, "/exit") == 0) end = 1;
+					recv(c_socket, ques, sizeof(ques), 0);
+					printf("\nQuestion: %s\n", ques);
+
+					printf("Enter Answer: ");
+					scanf(" %[^\n]", ans);
+					//printf("\n\n%d\n\n", strlen(ans));
+					send(c_socket, ans, sizeof(ans), 0);
+
+					recv(c_socket, reply, sizeof(reply), 0);
+					printf("\n%s\n", reply);
 				}
-				printf("[+] Server Disconnected\n\n");
+			}
+			char result[25];
+			recv(c_socket, result, sizeof(result), 0);
+			printf("\nResult: \nCorrect: ");
+			for(int i=0;i<strlen(result);i++)
+			{
+				printf("%c", result[i]);
+				if(result[i] == 'c')
+				{
+					printf("\nWrong: ");
+				}
+				if(result[i] == 'w')
+				{
+					printf("\nLate: ");
+				}
+				if(result[i] == 'l')
+				{
+					printf("\nTotal no of questions: ");
+				}
+				if(result[i] == 'q')
+				{
+					printf("\n");
+				}
+			}
 		}
 
 		printf("Do you want to exit: ");
-		scanf("%d", &exit);
+		scanf("%d", &ex2);
 
-		close(c_socket);
+		printf("\n--------------------------------------------------------------\n");
+		
 	}
 
-	
-
-	printf("\n---------------------------------------------------------------------\n");	
 	return 0;
 }
 
