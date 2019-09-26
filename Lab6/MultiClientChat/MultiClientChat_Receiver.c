@@ -182,7 +182,7 @@ int main()
 
 									if(strcmp(text, "/exit") == 0)
 									{
-										printf("Client %s logged off.\n", name);
+										printf("Client %s - Client %s connection stopped.\n", name, clients[destindex].name); 
 										end = 1;
 										send(clients[destindex].s_server, name, sizeof(name), 0);
 										send(clients[destindex].s_server, text, sizeof(text), 0);
