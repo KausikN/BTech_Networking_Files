@@ -1,5 +1,5 @@
 #include<stdio.h>
-
+#include<arpa/inet.h>
 #include<stdlib.h>
 #include<sys/types.h>
 #include<sys/socket.h>
@@ -80,8 +80,8 @@ int main()
 			send(c_socket, ipaddr, sizeof(ipaddr), 0);
 			send(c_socket, port_str, sizeof(port_str), 0);
 
-
 			char dest_name[50];
+			reset:
 			printf("Enter Dest Name: ");
 			scanf("%s", dest_name);
 			send(c_socket, dest_name, sizeof(dest_name), 0);
@@ -105,12 +105,13 @@ int main()
 				int end = 0;
 				while(end == 0)
 				{
-					scanf("%s", text);
+					scanf(" %[^\n]", text);
 					send(c_socket, text, sizeof(text), 0);
 					if(strcmp(text, "/exit") == 0) end = 1;
 				}
-				exit(0);
-				return 0;
+				goto reset;
+				//exit(0);
+				//return 0;
 			}
 			else if(pidtr > 0)
 			{
@@ -127,6 +128,7 @@ int main()
 					}
 				}
 				printf("\n(Text Receiver Stopped)\n");
+				goto reset;
 
 				printf("[+] Server Disconnected\n\n");
 				printf("Do you want to ex2: ");

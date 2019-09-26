@@ -120,7 +120,7 @@ int main()
 				if(accepterror == 0)
 				{
 
-					int pid = fork();
+					int pid = vfork();
 					if(pid > 0)
 					{
 						//return 0;
@@ -184,6 +184,8 @@ int main()
 									{
 										printf("Client %s logged off.\n", name);
 										end = 1;
+										send(clients[destindex].s_server, name, sizeof(name), 0);
+										send(clients[destindex].s_server, text, sizeof(text), 0);
 										break;
 									}
 									else 
