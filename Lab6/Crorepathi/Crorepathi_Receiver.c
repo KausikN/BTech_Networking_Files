@@ -7,16 +7,43 @@
 #include<unistd.h>
 #include <arpa/inet.h>
 
+
 #include<time.h>
 
 char questions[][25] = {"What is 1+1?", "What is 2+1?", "What is 1+3?"};
 char answers[][25] = {"2", "3", "4"};
 int no_of_ques = 3;
 
-int maxtime_to_ans = 300;
+int maxtime_to_ans = 5;
 
 int s_socket, s_server;
 char clientip[20];
+
+int loop() 
+{
+    time_t start, end;
+    double elapsed;
+ 	int k=0;
+    time(&start);  /* start the timer */
+ 
+    do 
+    {
+        time(&end);
+ 
+        elapsed = difftime(end, start);
+        
+        /* For most data types one could simply use
+            elapsed = end - start;
+            but for time_t one needs to use difftime(). */
+ 		if(elapsed==k)
+ 		{
+ 			printf("elapsed %f\n\r", elapsed);
+ 			k++;
+ 		}
+    } while(elapsed < maxtime_to_ans);  /* run for ten seconds */
+
+return 1;
+}
 
 int ServerCreate(int port)		// Return 1 for error
 {
@@ -170,9 +197,9 @@ int main()
 						char name[50];
 						char ipaddr[20];
 						char port_str[20];
-						char dest_name[50];
+						//char dest_name[50];
 
-						char text[200];
+						//char text[200];
 
 						recv(s_server_child, name, sizeof(name), 0);
 						recv(s_server_child, ipaddr, sizeof(ipaddr), 0);
@@ -195,9 +222,9 @@ int main()
 						int time_s = 0, time_e = 0;
 						int time_to_ans = 0;
 
-						char correct[] = "Correct!";
-						char wrong[] = "Wrong...";
-						char late[] = "Too Late...";
+						char correct[15] = "Correct!";
+						char wrong[100] = "Better Luck Next Time...";
+						char late[15] = "Too Late...";
 
 						char ans[200];
 
@@ -211,18 +238,14 @@ int main()
 							printf("\nQuestion for %s: %s\n", client.name, questions[i]);
 							send(s_server_child, questions[i], sizeof(questions[i]), 0);
 
-							time_s = GetCurTimeInSec();
+							//loop()
+							//time_s = GetCurTimeInSec();
 
 							recv(s_server_child, ans, sizeof(ans), 0);
-
-							time_e = GetCurTimeInSec();
-
-							time_to_ans = time_e - time_s;
-
 							client.avg_time += time_to_ans / no_of_ques;
 
 							//printf("\n\n%d\n\n", strlen(ans));
-							if(time_to_ans > maxtime_to_ans)
+							if(strcmp(ans,"-666")==0)
 							{
 								client.late++;
 								printf("\nAnswer entered by %s: %s -- Late Answer (%d sec to answer)\n", client.name, ans, time_to_ans);
@@ -239,6 +262,8 @@ int main()
 								client.wrong++;
 								printf("\nAnswer entered by %s: %s -- Wrong -- Expected %s\n", client.name, ans, answers[i]);
 								send(s_server_child, wrong, sizeof(wrong), 0);
+								break;
+
 							}
 						}
 						printf("\nOVER\n");
@@ -270,4 +295,3 @@ int main()
 	printf("\n---------------------------------------------------------------------\n");	
 	return 0;
 }
-

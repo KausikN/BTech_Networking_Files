@@ -6,7 +6,7 @@
 #include<netinet/in.h>
 #include<string.h>
 #include<unistd.h>
-
+#include <arpa/inet.h>
 #include<time.h>
 
 int c_socket;
@@ -109,7 +109,7 @@ int main()
 
 			char ques[200];
 			char ans[200];
-			char reply[10];
+			char reply[100];
 			
 
 			printf("[+] Server Connected\n\n");
@@ -129,12 +129,37 @@ int main()
 					printf("\nQuestion: %s\n", ques);
 
 					printf("Enter Answer: ");
-					scanf(" %[^\n]", ans);
+					fflush(stdout);
+					int iResult;
+					struct timeval tv;
+			      	fd_set rfds;
+			      	FD_ZERO(&rfds);
+			      	FD_SET(0, &rfds);
+
+			     	tv.tv_sec = 10;
+			      	iResult = select(1, &rfds, NULL, NULL, &tv);
+			      	if(iResult == 0)
+			      	{
+			          printf("TimeOut\n");
+			          strcpy(ans,"-666");
+			      	} 
+			      	else
+			      	{
+			         	FD_ISSET(0,&rfds);//172.16.17.77
+			         	scanf(" %[^\n]",ans);
+			      	} 
+					//scanf(" %[^\n]", ans);
 					//printf("\n\n%d\n\n", strlen(ans));
 					send(c_socket, ans, sizeof(ans), 0);
 
 					recv(c_socket, reply, sizeof(reply), 0);
 					printf("\n%s\n", reply);
+					if(strcmp(reply,"Better Luck Next Time...")==0)
+					{
+						close(c_socket);
+						return 0;
+					}
+					
 				}
 			}
 			char result[25];
@@ -142,23 +167,25 @@ int main()
 			printf("\nResult: \nCorrect: ");
 			for(int i=0;i<strlen(result);i++)
 			{
-				printf("%c", result[i]);
+				
 				if(result[i] == 'c')
 				{
 					printf("\nWrong: ");
 				}
-				if(result[i] == 'w')
+				else if(result[i] == 'w')
 				{
 					printf("\nLate: ");
 				}
-				if(result[i] == 'l')
+				else if(result[i] == 'l')
 				{
 					printf("\nTotal no of questions: ");
 				}
-				if(result[i] == 'q')
+				else if(result[i] == 'q')
 				{
 					printf("\n");
 				}
+				else
+					printf("%c", result[i]);
 			}
 		}
 
@@ -168,7 +195,6 @@ int main()
 		printf("\n--------------------------------------------------------------\n");
 		
 	}
-
+	close(c_socket);
 	return 0;
 }
-
