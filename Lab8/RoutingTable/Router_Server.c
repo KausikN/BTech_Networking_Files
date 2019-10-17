@@ -263,13 +263,13 @@ int main()
 
 		strcpy(src_ipaddr, inet_ntoa(other.sin_addr));
 
-		printf("\nConnection SRC: src_devicename: %s, src_ipaddr: %s, src_port: %s\n", src_devicename, src_ipaddr, src_port);
-		printf("\nConnection DEST: dest_devicename: %s, dest_ipaddr: %s, dest_port: %s\n", dest_devicename, dest_ipaddr, dest_port);
-		printf("\nConnection TEXT: %s\n", dest_text);
+		// printf("\nConnection SRC: src_devicename: %s, src_ipaddr: %s, src_port: %s\n", src_devicename, src_ipaddr, src_port);
+		// printf("\nConnection DEST: dest_devicename: %s, dest_ipaddr: %s, dest_port: %s\n", dest_devicename, dest_ipaddr, dest_port);
+		// printf("\nConnection TEXT: %s\n", dest_text);
 
 		if(strcmp(dest_devicename, this_device_name) == 0)
 		{
-			printf("Device %s with IP %s sent text: %s", dest_devicename, dest_ipaddr, dest_text);
+			printf("Device %s with IP %s sent text: %s", src_devicename, dest_ipaddr, dest_text);
 		}
 		else
 		{
@@ -319,9 +319,9 @@ int main()
 									send(c_socket, rt.devices[this_device_index].device_name, sizeof(rt.devices[this_device_index].device_name), 0);
 									send(c_socket, rt.devices[this_device_index].ip_addr, sizeof(rt.devices[this_device_index].ip_addr), 0);
 									send(c_socket, rt.devices[this_device_index].port, sizeof(rt.devices[this_device_index].port), 0);
-									send(c_socket, rt.devices[i].device_name, sizeof(rt.devices[i].device_name), 0);
-									send(c_socket, rt.devices[i].ip_addr, sizeof(rt.devices[i].ip_addr), 0);
-									send(c_socket, rt.devices[i].port, sizeof(rt.devices[i].port), 0);
+									send(c_socket, dest_devicename, sizeof(dest_devicename), 0);
+									send(c_socket, dest_ipaddr, sizeof(dest_ipaddr), 0);
+									send(c_socket, dest_port, sizeof(dest_port), 0);
 									send(c_socket, dest_text, sizeof(dest_text), 0);
 									close(c_socket);
 								}
