@@ -17,6 +17,7 @@ struct Device
 {
 	char device_name[100];
 	char ip_addr[100];
+	char subnetid[100];
 	char port[20];
 	int connected_to_this;
 };
@@ -68,7 +69,7 @@ void * AcceptNewClient(void * p)
 	if(s_server == -1) ;//return 1;
 	else
 	{
-		printf("\n[+] Conection accepted from %s,%d\n",inet_ntoa(other.sin_addr),ntohs(other.sin_port));
+		printf("\n[+] Conection accepted from %s, %d\n",inet_ntoa(other.sin_addr),ntohs(other.sin_port));
 		//return 0;
 	}
 
@@ -94,7 +95,7 @@ int ClientCreate(int port, char IPADDR[])		// Return 1 for error
 
 struct RoutingTable rt;
 
-void RoutingTableInit(char devicenames[][100], char ipaddrs[][100], char ports[][20], int no_of_devices, char this_device_name[], int connections[][100])
+void RoutingTableInit(char devicenames[][100], char ipaddrs[][100], char subnetid[][100], char ports[][20], int no_of_devices, char this_device_name[], int connections[][100])
 {
 	int this_device_index = 0;
 	for(int i=0;i<no_of_devices;i++)
@@ -106,6 +107,7 @@ void RoutingTableInit(char devicenames[][100], char ipaddrs[][100], char ports[]
 	{
 		strcpy(rt.devices[i].device_name, devicenames[i]);
 		strcpy(rt.devices[i].ip_addr, ipaddrs[i]);
+		strcpy(rt.devices[i].subnetid, subnetid[i]);
 		strcpy(rt.devices[i].port, ports[i]);
 		if(connections[this_device_index][i] == 1 && connections[i][this_device_index] == 1) rt.devices[i].connected_to_this = 1;
 		else rt.devices[i].connected_to_this = 0;
@@ -121,11 +123,55 @@ int GetRoutingTableIndex(char device_name[], int no_of_devices)
 	return -1;
 }
 
+int no_of_bits(int no_of_devices)
+{
+	int bits = 0;
+	while(no_of_devices > 0)
+	{
+		bits++;
+		no_of_devices /= 2;
+		if(no_of_devices == 1) break;
+	}
+	return bits;
+}
+
+char GetClassID(char ip[])
+{
+	char class;
+
+	int classid = (ip[2]-48) + 10*(ip[1]-48) + 100*(ip[0]-48);
+	if(classid >= 0 && classid <= 127) class = 'a';
+	if(classid >= 128 && classid <= 191) class = 'b';
+	if(classid >= 192 && classid <= 223) class = 'c';
+	if(classid >= 224 && classid <= 239) class = 'd';
+	if(classid >= 240 && classid <= 254) class = 'e';
+
+	return class;
+}
+
+int GetIPPart(int bits)
+{
+	int ippart = 0;
+	int inc = 128;
+	while(bits > 0)
+	{
+		ippart += inc;
+		inc /= 2;
+		bits--;
+	}
+	return ippart;
+}
+
 int main()
 {
 	int no_of_devices = 4;
+	int subnet_bits = no_of_bits(no_of_devices);
+
+	int host_bits = 0;
+
 	char devicenames[/*no_of_devices*/][100] = {"A", "B", "C", "D"};
 	char ipaddrs[/*no_of_devices*/][100] = {"127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1"};
+	char subnetid[/*no_of_devices*/][100] = {"127.0.0.0", "127.64.0.0", "127.128.0.1", "127.192.0.1"};
 	char ports[/*no_of_devices*/][20] = {"9009", "9010", "9011", "9012"};
 	int connections[/*no_of_devices*/][100] = {
 													 {-1, 1, 0, 0},
@@ -134,14 +180,11 @@ int main()
 													 {0, 1, 1, -1}
 	};
 
-
-
-
 	char this_device_name[100];
 	printf("Enter this Device name: ");
 	scanf("%s", this_device_name);
 
-	RoutingTableInit(devicenames, ipaddrs, ports, no_of_devices, this_device_name, connections);
+	RoutingTableInit(devicenames, ipaddrs, subnetid, ports, no_of_devices, this_device_name, connections);
 
 	int self_index = GetRoutingTableIndex(this_device_name, no_of_devices);
 
@@ -173,10 +216,121 @@ int main()
 	if(choice == 1)
 	{
 		char text[500];
+		char dest_deviceIP[100];
 		char dest_devicename[100];
 
-		printf("Enter Device Name: ");
-		scanf("%s", dest_devicename);
+		printf("Enter Destination Device IP: ");
+		scanf("%s", dest_deviceIP);
+
+		char subnetmask[100];
+		char class = GetClassID(dest_deviceIP);
+
+		printf("\nCLASS: %c\n", class);
+		printf("\nSUBNETBITS: %d\n", subnet_bits);
+
+		if(class == 'a')
+		{
+			strcpy(subnetmask, "255.");
+			if(subnet_bits <= 8)
+			{
+				char itoatemp[100];
+				sprintf(itoatemp, "%d", GetIPPart(subnet_bits));
+				strcat(subnetmask, itoatemp);
+				strcat(subnetmask, ".0.0");
+			}
+			else if(subnet_bits <= 16)
+			{
+				char itoatemp[100];
+				strcat(subnetmask, "255.");
+				sprintf(itoatemp, "%d", GetIPPart(subnet_bits - 8));
+				strcat(subnetmask, itoatemp);
+				strcat(subnetmask, ".0");
+			}
+			else if(subnet_bits <= 24)
+			{
+				char itoatemp[100];
+				strcat(subnetmask, "255.255.");
+				sprintf(itoatemp, "%d", GetIPPart(subnet_bits - 16));
+				strcat(subnetmask, itoatemp);
+			}
+		}
+		else if(class == 'b')
+		{
+			strcpy(subnetmask, "255.255.");
+			if(subnet_bits <= 8)
+			{
+				char itoatemp[100];
+				sprintf(itoatemp, "%d", GetIPPart(subnet_bits));
+				strcat(subnetmask, itoatemp);
+				strcat(subnetmask, ".0");
+			}
+			else if(subnet_bits <= 16)
+			{
+				char itoatemp[100];
+				strcat(subnetmask, "255.");
+				sprintf(itoatemp, "%d", GetIPPart(subnet_bits - 8));
+				strcat(subnetmask, itoatemp);
+			}
+		}
+		else if(class == 'c')
+		{
+			strcpy(subnetmask, "255.255.255.");
+			if(subnet_bits <= 8)
+			{
+				char itoatemp[100];
+				sprintf(itoatemp, "%d", GetIPPart(subnet_bits));
+				strcat(subnetmask, itoatemp);
+			}
+		}
+
+		printf("\nSUBNETMASK: %s\n", subnetmask);
+
+		int subnetid_val[4];
+		for(int i=0;i<4;i++)
+		{
+			int temp = 0;
+			int a = (dest_deviceIP[i*4 + 2]-48) + 10*(dest_deviceIP[i*4 + 1]-48) + 100*(dest_deviceIP[i*4 + 0]-48);
+			int b = (subnetmask[i*4 + 2]-48) + 10*(subnetmask[i*4 + 1]-48) + 100*(subnetmask[i*4 + 0]-48);
+			while(a > 0 || b > 0)
+			{
+				temp = 10*temp + (a%2 && b%2);
+				if(a == 0) break;
+				if(b == 0) break;
+				a /= 2;
+				b /= 2;
+			}
+			int temp2 = 0;
+			while(temp > 0)
+			{
+				temp2 = 10*temp2 + temp%10;
+				temp /= 10;
+			}
+			temp = temp2;
+			int val = 1;
+			while(temp > 0)
+			{
+				subnetid_val[i] += val*(temp%10);
+				temp /= 10;
+				if(temp == 0) break;
+				val *= 2;
+			}
+		}
+		char dest_subnetid[100];
+		char subnettemp[100];
+		sprintf(subnettemp, "%d", subnetid_val[0]);
+		strcpy(dest_subnetid, subnettemp);
+		strcat(dest_subnetid, ".");
+		sprintf(subnettemp, "%d", subnetid_val[1]);
+		strcat(dest_subnetid, subnettemp);
+		strcat(dest_subnetid, ".");
+		sprintf(subnettemp, "%d", subnetid_val[2]);
+		strcat(dest_subnetid, subnettemp);
+		strcat(dest_subnetid, ".");
+		sprintf(subnettemp, "%d", subnetid_val[3]);
+		strcat(dest_subnetid, subnettemp);
+
+		printf("\nSUBNETID DEST: %s\n", dest_subnetid);
+
 /*
 		printf("Enter IP Address to send: ");
 		scanf("%s", rt.ip_addr);
@@ -185,7 +339,14 @@ int main()
 		scanf("%s", text);
 
 		int this_device_index = GetRoutingTableIndex(this_device_name, no_of_devices);
-		int dest_device_index = GetRoutingTableIndex(dest_devicename, no_of_devices);
+		int dest_device_index = -1;
+
+		for(int i=0;i<no_of_devices;i++)
+		{
+			if(strcmp(rt.devices[i].subnetid, dest_subnetid) == 0) dest_device_index = i;
+		}
+
+		if(dest_device_index != -1) strcpy(dest_devicename, rt.devices[dest_device_index].device_name);
 
 		if(this_device_index != -1 && dest_device_index != -1 && this_device_index != dest_device_index)
 		{

@@ -175,7 +175,7 @@ int main()
 		char text[500];
 		char dest_devicename[100];
 
-		printf("Enter Device Name: ");
+		printf("Enter Destination Device Name: ");
 		scanf("%s", dest_devicename);
 /*
 		printf("Enter IP Address to send: ");
