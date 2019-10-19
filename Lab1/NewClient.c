@@ -23,7 +23,7 @@ int main()
 	memset(&client, 0, sizeof(client));
 	client.sin_family = AF_INET;
 	client.sin_port = htons(9009);
-	client.sin_addr.s_addr = inet_addr("172.16.17.21");
+	client.sin_addr.s_addr = inet_addr("172.17.4.235");
 	if(connect(c_socket, (struct sockaddr *)&client, sizeof(client)) == -1)
 	{
 		printf("Connection Issue.\n");
