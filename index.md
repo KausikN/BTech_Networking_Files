@@ -1,37 +1,38 @@
-## Welcome to GitHub Pages
+# BTech Networking Files
 
-You can use the [editor on GitHub](https://github.com/KausikN/BTech_Networking_Files/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+📖 Academic Files and Codes
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+## Institute
 
-### Markdown
+🧑‍🎓 B.Tech (H), IIITDM Kancheepuram
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+## Course
 
-```markdown
-Syntax highlighted code block
+|    Name    |   Roll No   | SEM |        Course Name         |
+| :--------: | :---------: | :-: | :------------------------: |
+|  N Kausik  |  COE17B010  |  5  | Computer Networks Practice |
 
-# Header 1
-## Header 2
-### Header 3
+## Codes
 
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/KausikN/BTech_Networking_Files/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+  - Labs
+    - Lab 1
+        - [Basic Client and Server](Lab1/)
+    - Lab 2
+        - [Server based Calculator](Lab2/)
+    - Lab 3
+        - [Cyclic Redundancy Checker](Lab3/)
+    - Lab 4
+        - [Huffman Encoder](Lab4/Huffman/)
+        - [File transfer](Lab4/FileTransfer/)
+    - Lab 5
+        - [Hamming Code](Lab5/HammingCode/)
+    - Lab 6
+        - [Client Threads](Lab6/ClientThreads/)
+        - [Multiclient based Chat Application](Lab6/MultiClientChat/)
+        - [Crorepathi Application](Lab6/Crorepathi/)
+    - Lab 7
+        - [Sliding Window Protocol based server](Lab7/SlidingWindow/)
+        - [Stop & Wait Protocol based server](Lab7/Stop&Wait/)
+    - Lab 8
+        - [Routing Table](Lab8/RoutingTable/)
+        - [Subnet Mask Generator](Lab8/SubnetMask/)
